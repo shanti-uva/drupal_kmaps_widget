@@ -1,0 +1,4 @@
+name = Shanti Field
+description = A field that exposes a module to connect and bring associations from a Ruby API
+package = Shanti Project
+core = 7.x

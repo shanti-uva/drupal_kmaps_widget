@@ -1,0 +1,145 @@
+<?php
+/**
+ * @file
+ * This file contains the definition of the field and widget
+ */
+
+/**
+ * Implements hook_field_info().
+ */
+function shanti_field_field_info() {
+  return array(
+    'shantiEditField' => array(
+      'label' => t('Shanti Field Text'),
+      'description' => t('Field that holds and shows the value from the Shanti API'),
+      'settings' => array('max_length' => 255),
+      'instance_settings' => array('text_processing' => 0),
+      'default_widget' => 'shanti_field_textfield',
+      'default_formatter' => 'shanti_field_format',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_schema().
+ */
+function shanti_field_field_schema($field) {
+  $schema['columns']['shanti_field'] = array(
+    'type' => 'varchar',
+    'length' => $field['settings']['max_length'],
+    'not null' => FALSE,
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function shanti_field_field_is_empty($item, $field) {
+  if ($field['type'] == 'shantiEditField') {
+    if (empty($item['shanti_field'])) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function shanti_field_field_widget_info() {
+  return array(
+    'shanti_field_textfield' => array(
+      'label' => t('Shanti Widget'),
+      'description' => 'Exposes the shanti Ruby app in an Ext.JS app',
+      'field types' => array('shantiEditField'),
+      'settings' => array('size' => 60),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function shanti_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $shanti_path = drupal_get_path('module', 'shanti_field');
+
+  $base = $element;
+
+  if ($instance['widget']['type'] == 'shanti_field_textfield') {
+    $element['shanti_field'] = array(
+      '#type' => 'textfield',
+      '#default_value' => isset($items[$delta]['shanti_field']) ? $items[$delta]['shanti_field'] : '',
+      '#prefix' => '<div id="shanti_field_id_wrapper">',
+      '#suffix' => '</div>',
+    ) + $base;
+  }
+
+  $form['#attached']['css'] = array(
+    $shanti_path . '/shanti/resources/css/ext-all-notheme.css',
+    $shanti_path . '/shanti/resources/css/xtheme-artstor.css',
+    $shanti_path . '/shanti/resources/css/ssimata.css',
+    $shanti_path . '/shanti/resources/css/lookup-field/lookup-field.css',
+    $shanti_path . '/shanti/resources/css/xtheme-kmaps.css',
+    $shanti_path . '/shanti/resources/css/xtheme-kmaps-search.css',
+  );
+
+  $form['#attached']['js'] = array(
+    $shanti_path . '/shanti/ext-base.js',
+    $shanti_path . '/shanti/ext-all-debug.js',
+    $shanti_path . '/shanti/ux-all-debug.js',
+    $shanti_path . '/shanti/sharedshelf/data/abortable-store.js',
+    $shanti_path . '/shanti/sharedshelf/form/progress-showing-text-field.js',
+    $shanti_path . '/shanti/sharedshelf/external-service-search-button.js',
+    $shanti_path . '/shanti/sharedshelf/window/external-service-lookup-window.js',
+    $shanti_path . '/shanti/app/kmaps_lookup.js',
+    $shanti_path . '/shanti/shanti.js',
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function shanti_field_field_formatter_info() {
+  return array(
+    'shanti_field_default' => array(
+      'label' => t('Link'),
+      'field types' => array('shantiEditField'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function shanti_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    case 'shanti_field_default':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#markup' => '<div id="shanti_field_display"><p>' . $item['shanti_field'] . '</p></div>',
+        );
+      }
+      break;
+  }
+  return $element;
+}
+
+
+
+
+
+
+
+
+
